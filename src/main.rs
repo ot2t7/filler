@@ -59,33 +59,33 @@ impl Filler {
         return (x, y);
     }
 
-    pub fn get_neighbors(&self, x: i32, y: i32) -> Vec<Option<Block>> { // [Left, Right, Bottom, Top]
-        let mut to_return: Vec<Option<Block>> = vec![];
+    pub fn get_neighbors(&self, x: i32, y: i32) -> Vec<Option<usize>> { // [Left, Right, Bottom, Top]
+        let mut to_return: Vec<Option<usize>> = vec![];
 
         let left = Filler::point_to_index(x - 1, y);
         if left >= 0 && left < self.game_grid.len() as i32 {
-            to_return.push(Some(self.game_grid[left as usize]));
+            to_return.push(Some(left as usize));
         } else {
             to_return.push(None);
         }
 
         let right = Filler::point_to_index(x + 1, y);
         if right >= 0 && right < self.game_grid.len() as i32 {
-            to_return.push(Some(self.game_grid[right as usize]));
+            to_return.push(Some(right as usize));
         } else {
             to_return.push(None);
         }
 
         let bottom = Filler::point_to_index(x, y + 1);
         if bottom >= 0 && bottom < self.game_grid.len() as i32 {
-            to_return.push(Some(self.game_grid[bottom as usize]));
+            to_return.push(Some(bottom as usize));
         } else {
             to_return.push(None);
         }
 
         let top = Filler::point_to_index(x, y - 1);
         if top >= 0 && top < self.game_grid.len() as i32 {
-            to_return.push(Some(self.game_grid[top as usize]));
+            to_return.push(Some(top as usize));
         } else {
             to_return.push(None);
         }
@@ -135,8 +135,24 @@ impl Filler {
         return self.game_grid[Filler::point_to_index(0, GRID_Y as i32 - 1) as usize].color;
     }
 
+    pub fn set_player_color(&mut self, new_color: u8) {
+        for (idx, mut element) in self.game_grid.iter_mut().enumerate() {
+            if element.owned_by == OwnedBy::Player {
+                element.color = new_color;
+            }
+        }
+    }
+
     pub fn get_ai_color(&self) -> u8 {
         return self.game_grid[Filler::point_to_index(GRID_X as i32 - 1, 0) as usize].color;
+    }
+
+    pub fn set_ai_color(&mut self, new_color: u8) {
+        for (idx, mut element) in self.game_grid.iter_mut().enumerate() {
+            if element.owned_by == OwnedBy::AI {
+                element.color = new_color;
+            }
+        }
     }
 }
 
@@ -150,8 +166,9 @@ fn main() {
         let mut input = String::new();
         match io::stdin().read_line(&mut input) {
             Ok(_) => {
-                match input.parse::<u8>() {
+                match input.trim().parse::<u8>() {
                     Ok(num) => {
+                        println!("You chose: {}", num);
                         if num > COLORS_NUM as u8 {
                             continue;
                         }
@@ -159,11 +176,14 @@ fn main() {
                             continue;
                         }
 
+                        println!("Valid color!");
+
+                        let mut neighbors_to_update: Vec<Vec<Option<usize>>> = vec![];
                         for (idx, mut element) in game.game_grid.iter_mut().enumerate() {
                             if element.owned_by == OwnedBy::Player {
-                                let cords = Filler::index_to_point(idx as i32);
+                                println!("Changing {} to {}!", element.color, num);
                                 element.color = num;
-
+                                let cords = Filler::index_to_point(idx as i32);
                             }
                         }
 
